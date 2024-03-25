@@ -1,3 +1,7 @@
+using Microsoft.Playwright;
+using static NUnit.Framework.Assert;
+
+
 namespace PlaywrightCSharp2;
 
 public class Tests
@@ -8,8 +12,27 @@ public class Tests
     }
 
     [Test]
-    public void Test1()
+    public async Task Test1()
     {
-        Assert.Pass();
+        //Playwright
+        using var playwright = await Playwright.CreateAsync();
+        //Browser
+        await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+        {
+            Headless = false
+        });
+        //Page
+        var page = await browser.NewPageAsync();
+        await page.GotoAsync("http://www.eaapp.somee.com");
+        await page.ClickAsync("text=Login");
+        await page.ScreenshotAsync(new PageScreenshotOptions
+            {
+                Path = "test.png"
+            });
+        await page.FillAsync("#UserName", "admin");
+        await page.FillAsync("#Password", "password");
+        await page.ClickAsync("text=Log in");
+        var isExist = await page.Locator("text='Employee Details'").IsVisibleAsync();
+        Assert.IsTrue(isExist);
     }
 }
